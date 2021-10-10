@@ -30,7 +30,7 @@ def centraldif2(prev, curr, next, h):
     return (prev - 2 * curr + next) / (h**2)
 
 
-def main():
+def main1():
     N = 15
     a = -1.5
     b = 1.5
@@ -99,5 +99,65 @@ def main():
 
     plt.show()
 
+def main2():
+    hmin = 0.001
+    hstep = 0.001
+    hmax = 0.1
+    hrange = np.arange(hmin, hmax, hstep)
+    a = -1.5
+    b = 1.5
 
-main()
+    error = np.zeros([len(hrange), 3])
+
+    for j in range(len(hrange)):
+        h = hrange[j]
+        xrange = np.arange(a, b + h, h)
+        forwarddif1values = np.zeros(len(xrange))
+        centraldif2values = np.zeros(len(xrange))
+        centraldif1values = np.zeros(len(xrange))
+        for i in range(1, len(xrange) - 1):
+            forwarddif1values[i] = forwarddif(func(xrange[i]), func(xrange[i + 1]), h)
+            centraldif1values[i] = centraldif(func(xrange[i - 1]), func(xrange[i + 1]), h)
+            centraldif2values[i] = centraldif2(func(xrange[i - 1]), func(xrange[i]), func(xrange[i + 1]), h)
+        forwarddif1values[0] = forwarddif(func(xrange[0]), func(xrange[1]), h)
+        # forwarddif1values[len(xrange) - 1] = forwarddif1values[len(xrange) - 2]
+        # centraldif1values[len(xrange) - 1] = centraldif1values[len(xrange) - 2]
+        # centraldif1values[0] = centraldif1values[1]
+
+        truedif1values = dif1func(xrange)
+        truedif2values = dif2func(xrange)
+        error[j, 0] = max(abs(truedif1values - forwarddif1values)[:-1])
+        error[j, 1] = max(abs(truedif1values - centraldif1values)[1:-1])
+        error[j, 2] = max(abs(truedif2values - centraldif2values)[1:-1])
+
+    error = np.log(error)
+    hrange = np.log(hrange)
+
+    plt.subplot(1, 3, 1)
+    plt.title("Первая производная, правые разности")
+    plt.xlabel("log(h)")
+    plt.ylabel("log(max(|Δy'|))")
+    plt.grid()
+    plt.plot(hrange, error[:, 0], color='k', label='Абсолютная погрешность')
+    plt.legend()
+
+    plt.subplot(1, 3, 2)
+    plt.title("Первая производная, центральные разности")
+    plt.xlabel("log(h)")
+    plt.ylabel("log(max(|Δy'|))")
+    plt.grid()
+    plt.plot(hrange, error[:, 1], color='k', label='Абсолютная погрешность')
+    plt.legend()
+
+    plt.subplot(1, 3, 3)
+    plt.title("Вторая производная, центральные разности")
+    plt.xlabel("log(h)")
+    plt.ylabel("log(max(|Δy''|))")
+    plt.grid()
+    plt.plot(hrange, error[:, 2], color='k', label='Абсолютная погрешность')
+    plt.legend()
+
+    plt.show()
+
+
+main2()
